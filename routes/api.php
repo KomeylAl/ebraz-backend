@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\BackupController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ResumeController;
 use Illuminate\Support\Facades\Route;
@@ -107,6 +108,8 @@ Route::middleware('auth:admin')->group(function () {
 
     /// 👤 مدیریت کاربران
     Route::patch('/user/{id}/edit', [UserController::class, 'editUser']);
+
+    Route::get('/backup/doctors', [BackupController::class, 'backupDoctors']);
 
     /// 🧾 مدیریت نوبت‌ها
     Route::prefix('appointments')->group(function () {

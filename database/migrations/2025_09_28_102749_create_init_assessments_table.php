@@ -15,8 +15,8 @@ return new class extends Migration
     {
         Schema::create('init_assessments', function (Blueprint $table) {
             $table->id();
-            $table->date('date');
-            $table->string('time');
+            $table->date('date')->nullable();
+            $table->string('time')->nullable();
             $table->enum('status', ['pending', 'done']);
             $table->string('file_path')->nullable();
             $table->timestamps();

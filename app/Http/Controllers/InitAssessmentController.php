@@ -43,13 +43,13 @@ class InitAssessmentController extends Controller
     {
         $validated = $request->validate([
             // اطلاعات ارزیابی
-            'date' => 'required|date',
-            'time' => 'required|string',
+            'date' => 'nullable|date',
+            'time' => 'nullable|string',
             'status' => 'required|in:pending,done',
             // 'file' => 'nullable|file',
 
             // اطلاعات دکتر
-            'doctor_id' => 'required|exists:doctors,id',
+            'doctor_id' => 'nullable|exists:doctors,id',
 
             // اطلاعات کلاینت (ممکن است جدید باشد)
             'client.phone' => 'required|string',
@@ -82,14 +82,14 @@ class InitAssessmentController extends Controller
 
         // ساخت ارزیابی
         $assessment = InitAssessment::create([
-            'date' => $validated['date'],
-            'time' => $validated['time'],
+            'date' => $validated['date'] ?? null,
+            'time' => $validated['time'] ?? null,
             'status' => $validated['status'],
         ]);
 
         // اتصال به pivot table
         $assessment->clients()->attach($client->id, [
-            'doctor_id' => $validated['doctor_id']
+            'doctor_id' => $validated['doctor_id'] ?? null
         ]);
 
         $notification = \App\Models\Notification::create([
