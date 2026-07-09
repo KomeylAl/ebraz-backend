@@ -12,7 +12,7 @@ class InitAssessmentController extends Controller
 {
     public function index(Request $request)
     {
-        $query = InitAssessment::query();
+        $query = InitAssessment::with(['doctor', 'client']);
 
         if ($request->filled('client_id')) {
             $client_id = $request->query('client_id');
@@ -29,8 +29,8 @@ class InitAssessmentController extends Controller
             });
         }
 
-        $sortBy = $request->query('sort_by', 'created_at'); // پیشفرض بر اساس created_at
-        $sortDirection = $request->query('sort_direction', 'desc'); // پیشفرض نزولی
+        $sortBy = $request->query('sort_by', 'created_at');
+        $sortDirection = $request->query('sort_direction', 'desc');
         $query->orderBy($sortBy, $sortDirection);
 
         $perPage = (int) $request->query('per_page', 10);
@@ -88,24 +88,24 @@ class InitAssessmentController extends Controller
         ]);
 
         // اتصال به pivot table
-        $assessment->clients()->attach($client->id, [
+        $assessment->client()->attach($client->id, [
             'doctor_id' => $validated['doctor_id'] ?? null
         ]);
 
-        $notification = \App\Models\Notification::create([
-            'title' => 'ثبت ارزیابی',
-            'message' => 'یک نوبت ارزیابی جدید ثبت شد.',
-            'type' => 'appointment',
-            'priority' => 'low',
-            'notifiable_type' => \App\Models\Admin::class,
-            'notifiable_id' => null,
-        ]);
+        // $notification = \App\Models\Notification::create([
+        //     'title' => 'ثبت ارزیابی',
+        //     'message' => 'یک نوبت ارزیابی جدید ثبت شد.',
+        //     'type' => 'appointment',
+        //     'priority' => 'low',
+        //     'notifiable_type' => \App\Models\Admin::class,
+        //     'notifiable_id' => null,
+        // ]);
 
-        event(new NotificationCreated($notification));
+        // event(new NotificationCreated($notification));
 
         return response()->json([
             'message' => 'ارزیابی با موفقیت ثبت شد',
-            'data' => $assessment->load(['clients', 'doctors'])
+            'data' => $assessment->load(['client', 'doctor'])
         ], 201);
     }
 

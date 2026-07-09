@@ -18,6 +18,8 @@ class ResumeController extends Controller
         // مرحله ۱: decode کردن فیلدهایی که JSON هستن
         $raw = $request->all();
 
+        Log::info('Resume Log' ,$raw);
+
         foreach (['educations', 'experiences', 'skills', 'certifications', 'social_links'] as $field) {
             if (isset($raw[$field]) && is_string($raw[$field])) {
                 $decoded = json_decode($raw[$field], true);
@@ -36,6 +38,7 @@ class ResumeController extends Controller
             'experiences' => 'nullable|array',
             'skills' => 'nullable|array',
             'certifications' => 'nullable|array',
+            'content' => 'nullable|string',
             'social_links' => 'nullable|array',
         ])->validate();
 

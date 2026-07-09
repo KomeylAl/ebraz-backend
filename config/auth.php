@@ -13,10 +13,10 @@ return [
     |
     */
 
-    'defaults' => [
-        'guard' => 'api',
-        'passwords' => ['admins', 'doctors', 'clients'],
-    ],
+    // 'defaults' => [
+    //     'guard' => 'api',
+    //     'passwords' => ['admins', 'doctors', 'clients'],
+    // ],
 
     /*
     |--------------------------------------------------------------------------
@@ -36,19 +36,22 @@ return [
     */
 
     'guards' => [
-        'web' => [
-            'driver' => 'session',
-            'provider' => 'users',
-        ],
-        'api' => [
-            'driver' => 'jwt',
-            'provider' => 'admins',
-        ],
         'admin' => [
             'driver' => 'jwt',
             'provider' => 'admins',
         ],
+
+        'doctor' => [
+            'driver' => 'jwt',
+            'provider' => 'doctors',
+        ],
+
+        'client' => [
+            'driver' => 'jwt',
+            'provider' => 'clients',
+        ],
     ],
+
 
     /*
     |--------------------------------------------------------------------------
@@ -68,28 +71,22 @@ return [
     */
 
     'providers' => [
-        'users' => [
-            'driver' => 'eloquent',
-            'model' => App\Models\User::class,
-        ],
         'admins' => [
             'driver' => 'eloquent',
             'model' => App\Models\Admin::class,
         ],
+
         'doctors' => [
             'driver' => 'eloquent',
             'model' => App\Models\Doctor::class,
         ],
+
         'clients' => [
             'driver' => 'eloquent',
             'model' => App\Models\Client::class,
         ],
-
-        // 'users' => [
-        //     'driver' => 'database',
-        //     'table' => 'users',
-        // ],
     ],
+
 
     /*
     |--------------------------------------------------------------------------

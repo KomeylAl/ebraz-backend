@@ -18,6 +18,7 @@ class Resume extends Model
         'experiences',
         'skills',
         'certifications',
+        'content',
         'social_links',
         'file'
     ];

@@ -16,12 +16,12 @@ class InitAssessment extends Model
         'file_path'
     ];
 
-    public function clients()
+    public function client()
     {
         return $this->belongsToMany(Client::class, 'assessment_user', 'init_assessment_id', 'client_id')->withPivot('doctor_id');
     }
 
-    public function doctors()
+    public function doctor()
     {
         return $this->belongsToMany(Doctor::class, 'assessment_user', 'init_assessment_id', 'doctor_id')->withPivot('client_id');
     }

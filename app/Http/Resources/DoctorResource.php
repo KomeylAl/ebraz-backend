@@ -20,16 +20,20 @@ class DoctorResource extends JsonResource
             'name' => $this->name,
             'avatar' => $this->avatar ? asset('storage/' .      $this->avatar) : null,
             'resume' => $this->whenLoaded('resumeRecord'),
+            'resources' => DoctorResourceResource::collection(
+                $this->whenLoaded('resources')
+            ),
             'phone' => $this->phone,
             'email' => $this->email,
+            'password' => $this->password,
             'national_code' => $this->national_code,
             'medical_number' => $this->medical_number,
             'card_number' => $this->card_number,
             'birth_date' => $this->birth_date,
             'departments' => DepartmentResource::collection($this->whenLoaded('departments')),
             'days' => $this->days,
-            'created_at' => $this->created_at->toDateTimeString(),
-            'updated_at' => $this->updated_at->toDateTimeString(),
+            'created_at' => $this->created_at,
+            'updated_at' => $this->updated_at,
         ];
     }
 }

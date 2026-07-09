@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\BackupController;
+use App\Http\Controllers\RestoreController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ResumeController;
 use Illuminate\Support\Facades\Route;
@@ -35,11 +36,21 @@ use App\Http\Controllers\InitAssessmentController;
 
 use App\Http\Controllers\DepartmentController;
 
+use App\Http\Controllers\v2\V2ResumeController;
+use App\Http\Controllers\v2\V2AppointmentController;
+use App\Http\Controllers\v2\V2AssessmentController;
+use App\Http\Controllers\v2\V2NotificationController;
+use App\Http\Controllers\v2\V2DoctorResourceController;
+
 
 /// ---------------------------
 /// 🔐 احراز هویت عمومی
 /// ---------------------------
-Route::post('/login', [AuthController::class, 'login']);
+// Route::post('/login', [AuthController::class, 'login']);
+
+Route::post('/auth/admin/login', [AuthController::class, 'adminLogin']);
+Route::post('/auth/doctor/login', [AuthController::class, 'doctorLogin']);
+Route::post('/auth/client/login', [AuthController::class, 'clientLogin']);
 
 Route::get('/notifications', [NotificationController::class, 'index']);
 Route::get('/notifications/unread', [NotificationController::class, 'unreadNotifications']);
@@ -98,6 +109,18 @@ Route::prefix('v1')->group(function () {
     Route::get('doctors/{doctor}', [DoctorController::class, 'show']);
 });
 
+Route::middleware('auth:doctor')->group(function () {
+    Route::prefix('v2/doctors')->group(function () {
+        Route::post('logout', [AuthController::class, 'logout']);
+        Route::get('resume', [V2ResumeController::class, 'show']);
+        Route::post('resume', [V2ResumeController::class, 'store']);
+        Route::get('appointments', [V2AppointmentController::class, 'index']);
+        Route::get('resources', [V2DoctorResourceController::class, 'index']);
+        Route::get('assessments', [V2AssessmentController::class, 'index']);
+        Route::get('notifications', [V2NotificationController::class, 'index']);
+    });
+});
+
 /// ---------------------------
 /// 👮‍♂️ مسیرهای محافظت‌شده برای admin
 /// ---------------------------
@@ -109,7 +132,29 @@ Route::middleware('auth:admin')->group(function () {
     /// 👤 مدیریت کاربران
     Route::patch('/user/{id}/edit', [UserController::class, 'editUser']);
 
-    Route::get('/backup/doctors', [BackupController::class, 'backupDoctors']);
+    Route::prefix('backup')->group(function () {
+        Route::get('/admins', [BackupController::class, 'backupAdmins']);
+        Route::get('/doctors', [BackupController::class, 'backupDoctors']);
+        Route::get('/doctor-resumes', [BackupController::class, 'backupDoctorResumes']);
+        Route::get('/clients', [BackupController::class, 'backupClients']);
+        Route::get('/posts', [BackupController::class, 'backupPosts']);
+        Route::get('/categories', [BackupController::class, 'backupCategories']);
+        Route::get('/tags', [BackupController::class, 'backupTags']);
+        Route::get('/workshops', [BackupController::class, 'backupWorkshops']);
+        Route::get('/about', [BackupController::class, 'backupAbout']);
+    });
+
+    Route::prefix('restore')->group(function () {
+        Route::post('/admins', [RestoreController::class, 'restoreAdmins']);
+        Route::post('/doctors', [RestoreController::class, 'restoreDoctors']);
+        Route::post('/doctor-resumes', [RestoreController::class, 'restoreDoctorResumes']);
+        Route::post('/clients', [RestoreController::class, 'restoreClients']);
+        Route::post('/posts', [RestoreController::class, 'restorePosts']);
+        Route::post('/categories', [RestoreController::class, 'restoreCategories']);
+        Route::post('/tags', [RestoreController::class, 'restoreTags']);
+        Route::post('/workshops', [RestoreController::class, 'restoreWorkshops']);
+        Route::post('/about', [RestoreController::class, 'restoreAbout']);
+    });
 
     /// 🧾 مدیریت نوبت‌ها
     Route::prefix('appointments')->group(function () {
@@ -117,7 +162,7 @@ Route::middleware('auth:admin')->group(function () {
         Route::get('{id}', [ReferralController::class, 'getReferral']);
         Route::get('date/{date}', [ReferralController::class, 'getReferralByDate']);
         Route::post('/', [ReferralController::class, 'addReferral']);
-        Route::patch('{id}/edit', [ReferralController::class, 'editReferral']);
+        Route::patch('{id}', [ReferralController::class, 'editReferral']);
         Route::delete('{id}', [ReferralController::class, 'deleteReferral']);
     });
 
@@ -133,17 +178,17 @@ Route::middleware('auth:admin')->group(function () {
     Route::prefix('clients')->group(function () {
         Route::get('/', [ClientController::class, 'index']);
         Route::get('{client:id}', [ClientController::class, 'show']);
-        Route::post('add', [ClientController::class, 'addClient']);
-        Route::patch('{id}/edit', [ClientController::class, 'editClient']);
-        Route::delete('{id}', [ClientController::class, 'deleteClient']);
+        Route::post('/', [ClientController::class, 'store']);
+        Route::patch('{id}', [ClientController::class, 'update']);
+        Route::delete('{id}', [ClientController::class, 'destroy']);
     });
 
     Route::prefix('doctors')->group(function () {
-        Route::get('{id}', [DoctorController::class, 'show']);
+        Route::get('{doctor}', [DoctorController::class, 'show']);
         Route::post('/', [DoctorController::class, 'store']);
         Route::post('/{doctor}', [DoctorController::class, 'update']);
         Route::delete('{id}', [DoctorController::class, 'destroy']);
-        Route::post('{id}/password', [DoctorController::class, 'storePassword']);
+        Route::post('{doctor}/password', [DoctorController::class, 'storePassword']);
         Route::get('{id}/panel/seven-days', [DoctorController::class, 'lastSevenDaysClients']);
         Route::get('{id}/panel/30-days', [DoctorController::class, 'last30DaysClients']);
         Route::get('{id}/panel/today-sms', [DoctorController::class, 'sendTodaysSms']);

@@ -48,7 +48,7 @@ class ClientController extends Controller
         return new ClientResource($client);
     }
 
-    public function addClient(Request $request)
+    public function store(Request $request)
     {
         $request->validate([
             'name' => 'required|string|max:255',
@@ -70,7 +70,7 @@ class ClientController extends Controller
         return response()->json($client, 201);
     }
 
-    public function editClient(Request $request, $id)
+    public function update(Request $request, $id)
     {
 
         $request->validate([
@@ -98,7 +98,7 @@ class ClientController extends Controller
         return response()->json($client, 200);
     }
 
-    public function deleteClient($id)
+    public function destroy($id)
     {
         Client::query()->where('id', $id)->delete();
         return response(['successful'], 200);

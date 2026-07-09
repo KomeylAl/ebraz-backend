@@ -7,8 +7,10 @@ use Illuminate\Database\Eloquent\Model;
 use App\Models\Doctor;
 use App\Models\Referral;
 use App\Models\InitAssessment;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Tymon\JWTAuth\Contracts\JWTSubject;
 
-class Client extends Model
+class Client extends Authenticatable implements JWTSubject
 {
     use HasFactory;
 
@@ -18,6 +20,16 @@ class Client extends Model
         'birth_date',
         'address'
     ];
+
+    public function getJWTIdentifier()
+    {
+        return $this->getKey();
+    }
+
+    public function getJWTCustomClaims()
+    {
+        return [];
+    }
 
     public function referrals()
     {

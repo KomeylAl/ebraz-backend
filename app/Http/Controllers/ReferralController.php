@@ -210,16 +210,16 @@ class ReferralController extends Controller
         $carbonDate = Carbon::createFromFormat('Y-m-d', $appointment->date);
         $jalaliDate = Jalalian::fromCarbon($carbonDate)->format('d M Y');
 
-        $notification = \App\Models\Notification::create([
-            'title' => 'ثبت نوبت',
-            'message' => "نوبت مراجع {$client->name} در تاریخ {$jalaliDate} با مشاور {$doctor->name} ثبت شد.",
-            'type' => 'appointment',
-            'priority' => 'low',
-            'notifiable_type' => \App\Models\Admin::class,
-            'notifiable_id' => null,
-        ]);
+        // $notification = \App\Models\Notification::create([
+        //     'title' => 'ثبت نوبت',
+        //     'message' => "نوبت مراجع {$client->name} در تاریخ {$jalaliDate} با مشاور {$doctor->name} ثبت شد.",
+        //     'type' => 'appointment',
+        //     'priority' => 'low',
+        //     'notifiable_type' => \App\Models\Admin::class,
+        //     'notifiable_id' => null,
+        // ]);
 
-        event(new NotificationCreated($notification));
+        // event(new NotificationCreated($notification));
 
         $paymentText = $request->amount_status == "unpaid" ? "لطفا مبلغ جلسه {$request->amount} را در اسرع وقت پرداخت کنید." : null;
         $text = "کلینیک ابراز\n{$client->name} عزیز\nنوبت شما در تاریخ {$jalaliDate} ساعت {$appointment->time} ثبت گردید.\n{$paymentText}";

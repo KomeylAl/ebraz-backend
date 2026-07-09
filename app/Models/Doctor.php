@@ -7,8 +7,10 @@ use Illuminate\Database\Eloquent\Model;
 use App\Models\Client;
 use App\Models\Referral;
 use App\Models\InitAssessment;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Tymon\JWTAuth\Contracts\JWTSubject;
 
-class Doctor extends Model
+class Doctor extends Authenticatable implements JWTSubject
 {
     use HasFactory;
 
@@ -16,15 +18,27 @@ class Doctor extends Model
         'name',
         'avatar',
         'resume',
+        'resources',
         'phone',
         'national_code',
         'birth_date',
         'card_number',
         'medical_number',
+        'password',
         'email',
         'days',
         'profile_path'
     ];
+
+    public function getJWTIdentifier()
+    {
+        return $this->getKey();
+    }
+
+    public function getJWTCustomClaims()
+    {
+        return [];
+    }
 
     public function resumeRecord()
     {
@@ -49,6 +63,11 @@ class Doctor extends Model
     public function departments()
     {
         return $this->belongsToMany(Department::class);
+    }
+
+    public function resources()
+    {
+        return $this->hasMany(DoctorResource::class);
     }
 
     public function notifications()

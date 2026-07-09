@@ -14,8 +14,8 @@ class InitAssessmentResource extends JsonResource
      */
     public function toArray($request): array
     {
-        $client = $this->clients->first();
-        $doctor = $this->doctors->first();
+        $client = $this->client->first();
+        $doctor = $this->doctor->first();
 
         return [
             'id' => $this->id,

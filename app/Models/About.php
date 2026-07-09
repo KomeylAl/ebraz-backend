@@ -10,10 +10,14 @@ class About extends Model
     use HasFactory;
 
     protected $fillable = [
-        'title', 'about', 'phones', 'address','mobile_phones','logo_path','lat', 'long'
+        'id', 'title', 'about', 'phones', 'address','mobile_phones','logo_path','lat', 'long'
     ];
 
-    public function getLogoPathAttribute($value) {
+    public function getLogoPathAttribute($value)
+    {
+        if (str_starts_with($value, 'http')) {
+            return $value;
+        }
         return $value ? asset('storage/' . $value) : null;
     }
 }

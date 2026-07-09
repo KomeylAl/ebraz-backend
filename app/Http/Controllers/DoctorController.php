@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use App\Http\Resources\DoctorResource;
+use App\Http\Resources\ReferralResource;
 
 class DoctorController extends Controller
 {
@@ -47,7 +48,7 @@ class DoctorController extends Controller
 
     public function show(Doctor $doctor)
     {
-        return new DoctorResource($doctor->load(['resumeRecord', 'departments']));
+        return new DoctorResource($doctor->load(['resumeRecord', 'departments', 'resources']));
     }
 
     public function store(Request $request)
@@ -170,7 +171,7 @@ class DoctorController extends Controller
             ]);
         }
 
-        return response()->json('رمز عبور با موفقیت ذخیره شد', 200);
+        return response()->json($doctor, 200);
     }
 
 
@@ -225,7 +226,7 @@ class DoctorController extends Controller
         });
 
         $filteredResult = $result->filter()->values();
-        return response()->json($filteredResult, 200);
+        return ReferralResource::collection($filteredResult);
     }
 
     public function yesterdaysClients($id)
@@ -298,96 +299,41 @@ class DoctorController extends Controller
         return response()->json($filteredResult, 200);
     }
 
-    public function lastSevenDaysClients($id)
+    public function lastSevenDaysClients($doctorId)
     {
-        // گرفتن اطلاعات نوبت‌های ۷ روز گذشته
-        $referrals = Referral::whereBetween('date', [Carbon::now()->subWeek(), Carbon::now()])
+        $referrals = Referral::query()
+            ->whereBetween('date', [now()->subDays(7), now()])
+            ->whereHas('doctor', function ($q) use ($doctorId) {
+                $q->where('doctors.id', $doctorId);
+            })
+            ->with([
+                'client',
+                'doctor',
+                'payment',
+            ])
             ->orderBy('date')
             ->get();
 
-        // آماده‌سازی داده‌ها
-        $result = $referrals->map(function ($referral) use ($id) {
-            // بررسی وجود رکورد مرتبط در جدول referral_user
-            $appUser = DB::table('referral_user')
-                ->where('referral_id', $referral->id)
-                ->where('doctor_id', $id)
-                ->first();
-
-            if (!$appUser) {
-                return; // اگر ارتباطی وجود نداشت، مقدار null بازگردانده می‌شود
-            }
-
-            // گرفتن اطلاعات دکتر و بیمار
-            $doctor = Doctor::find($appUser->doctor_id);
-            $client = Client::find($appUser->client_id);
-
-            // گرفتن اطلاعات پرداخت
-            $payment = Payment::where('referral_id', $referral->id)->first();
-
-            // بازگرداندن اطلاعات معتبر
-            return [
-                'referral_id' => $referral->id,
-                'doctor' => $doctor->name ?? 'ناشناس',
-                'client' => $client->name ?? 'ناشناس',
-                'date' => $referral->date,
-                'time' => $referral->time,
-                'status' => $referral->status,
-                'amount' => $referral->amount,
-                'payment_status' => $payment->status ?? 'نامشخص',
-                'payment' => $referral->amount
-            ];
-        });
-
-        // حذف مقادیر null و بازنشانی اندیس‌ها
-        $filteredResult = $result->filter()->values();
-
-        // بازگرداندن خروجی نهایی
-        return response()->json($filteredResult, 200);
+        return ReferralResource::collection($referrals);
     }
 
-    public function last30DaysClients($id)
+
+    public function last30DaysClients($doctorId)
     {
-        $referrals = Referral::whereBetween('date', [Carbon::now()->subDays(30), Carbon::now()])
+        $referrals = Referral::query()
+            ->whereBetween('date', [now()->subDays(30), now()])
+            ->whereHas('doctor', function ($q) use ($doctorId) {
+                $q->where('doctors.id', $doctorId);
+            })
+            ->with([
+                'client',
+                'doctor',
+                'payment',
+            ])
             ->orderBy('date')
             ->get();
 
-        $result = $referrals->map(function ($referral) use ($id) {
-            // بررسی وجود رکورد مرتبط در جدول referral_user
-            $appUser = DB::table('referral_user')
-                ->where('referral_id', $referral->id)
-                ->where('doctor_id', $id)
-                ->first();
-
-            if (!$appUser) {
-                return; // اگر ارتباطی وجود نداشت، مقدار null بازگردانده می‌شود
-            }
-
-            // گرفتن اطلاعات دکتر و بیمار
-            $doctor = Doctor::find($appUser->doctor_id);
-            $client = Client::find($appUser->client_id);
-
-            // گرفتن اطلاعات پرداخت
-            $payment = Payment::where('referral_id', $referral->id)->first();
-
-            // بازگرداندن اطلاعات معتبر
-            return [
-                'referral_id' => $referral->id,
-                'doctor' => $doctor->name ?? 'ناشناس',
-                'client' => $client->name ?? 'ناشناس',
-                'date' => $referral->date,
-                'time' => $referral->time,
-                'status' => $referral->status,
-                'amount' => $referral->amount,
-                'payment_status' => $payment->status ?? 'نامشخص',
-                'payment' => $referral->amount
-            ];
-        });
-
-        // حذف مقادیر null و بازنشانی اندیس‌ها
-        $filteredResult = $result->filter()->values();
-
-        // بازگرداندن خروجی نهایی
-        return response()->json($filteredResult, 200);
+        return ReferralResource::collection($referrals);
     }
 
     public function next30DaysClients($id)
